@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from .models import Store
+from .models import Shoes
 
 class MainTest(TestCase):
     def test_main_url_is_exist(self):
@@ -15,37 +15,37 @@ class MainTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_shop_creation(self):
-        store = Store.objects.create(
+        shoes = Shoes.objects.create(
             name="ABIBAS YEETZY",
             price=30000000,
             description="sepatu sigma untuk semua",
         )
-        store.sizes.create(size="42", stock=500)
+        shoes.sizes.create(size="42", stock=500)
 
-        self.assertTrue(store.is_available)
-        self.assertEqual(store.total_stock, 500)
+        self.assertTrue(shoes.is_available)
+        self.assertEqual(shoes.total_stock, 500)
 
-        store.decrease_stock("42")
-        self.assertEqual(store.total_stock, 499)
+        shoes.decrease_stock("42")
+        self.assertEqual(shoes.total_stock, 499)
 
-    def test_store_default_values(self):
-        store = Store.objects.create(
+    def test_shoes_default_values(self):
+        shoes = Shoes.objects.create(
             name="Test shoes",
             description="Test desc"
         )
-        self.assertEqual(store.price, 0)
-        self.assertEqual(store.total_stock, 0)
-        self.assertFalse(store.is_available)
+        self.assertEqual(shoes.price, 0)
+        self.assertEqual(shoes.total_stock, 0)
+        self.assertFalse(shoes.is_available)
 
     def test_stock_threshold(self):
-        store = Store.objects.create(
+        shoes = Shoes.objects.create(
             name="last pair",
             description="Test desc",
         )
-        store.sizes.create(size="42", stock=1)
+        shoes.sizes.create(size="42", stock=1)
 
-        self.assertTrue(store.is_available)
+        self.assertTrue(shoes.is_available)
 
-        store.decrease_stock("42")
-        self.assertEqual(store.total_stock, 0)
-        self.assertFalse(store.is_available)
+        shoes.decrease_stock("42")
+        self.assertEqual(shoes.total_stock, 0)
+        self.assertFalse(shoes.is_available)
