@@ -2,6 +2,9 @@
 [link to PWS](https://rifqy-pradipta-alphashoes.pbp.cs.ui.ac.id/)
 
 ---
+<details>
+<Summary><b>Tugas 2</b></Summary>
+
 ## checklist:
 - [x] Membuat sebuah proyek Django baru.
 	- Buat folder baru dan python venv dengan install seluruh requirement untuk setup Django.
@@ -122,6 +125,9 @@ Karena Django mencakup *FullStack* development sehingga dapat mengatur *FrontEnd
 #### Apakah ada feedback untuk asisten dosen tutorial 1 yang telah kamu kerjakan sebelumnya?
 Keren :0, terimakasih sudah memberikan tutorial lengkap.
 ![](yeah.gif)
+
+
+</details>
 
 ---
 [^1]:https://medium.com/@developerstacks/django-request-response-cycle-7165167f54c5

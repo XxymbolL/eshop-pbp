@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<p><a href="{% url 'main:show_main' %}"><button>← Back to Shoes List</button></a></p>
+
+<h1>{{ shoes.name }}</h1>
+
+<p>
+  <b>Price:</b> Rp {{ shoes.price}} |
+  <b>Total Stock:</b> {{ shoes.total_stock }} |
+  <b>Status:</b> {% if shoes.is_available %}Tersedia{% else %}Habis{% endif %}
+</p>
+
+{% if shoes.thumbnail %}
+  <img src="{{ shoes.thumbnail }}" alt="{{ shoes.name }} thumbnail" width="300">
+  <br /><br />
+{% endif %}
+
+<p>{{ shoes.description|default:"(no description)" }}</p>
+
+<h3>Available Sizes</h3>
+{% if shoes.sizes.all %}
+  <ul>
+    {% for row in shoes.sizes.all %}
+      <li>Size {{ row.size }} — Stock: {{ row.stock }}</li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>(No sizes yet)</p>
+{% endif %}
+
+{% endblock content %}

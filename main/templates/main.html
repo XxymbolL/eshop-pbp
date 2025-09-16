@@ -1,8 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+
 <h1>{{ title }}</h1>
 
-<h5>NPM: </h5>
+<h5>NPM:</h5>
 <p>{{ npm }}</p>
-<h5>Name: </h5>
-<p>{{ name }}<p>
-<h5>Class: </h5>
+<h5>Name:</h5>
+<p>{{ name }}</p>
+<h5>Class:</h5>
 <p>{{ class }}</p>
+
+<a href="{% url 'main:create_shoes' %}">
+  <button>+ Add Shoes</button>
+</a>
+
+<hr>
+
+{% if not shoes_list %}
+  <p>Belum ada data shoes pada shoes shop.</p>
+{% else %}
+  {% for shoes in shoes_list %}
+    <div>
+      <h2>
+        <a href="{% url 'main:show_shoes' shoes.id %}">{{ shoes.name }}</a>
+      </h2>
+
+      <p>
+        <b>Price:</b> Rp {{ shoes.price }} |
+        <b>Stock Total:</b> {{ shoes.total_stock }} |
+        <b>Status:</b>
+        {% if shoes.is_available %}<span>Tersedia</span>{% else %}<span>Habis</span>{% endif %}
+      </p>
+
+      {% if shoes.thumbnail %}
+        <img src="{{ shoes.thumbnail }}" alt="{{ shoes.name }} thumbnail" width="150" height="100"><br />
+      {% endif %}
+
+      {% if shoes.description %}
+        <p>{{ shoes.description|truncatewords:25 }}</p>
+      {% endif %}
+
+      <p>
+        <a href="{% url 'main:show_shoes' shoes.id %}">
+          <button>Detail</button>
+        </a>
+      </p>
+    </div>
+    <hr>
+  {% endfor %}
+{% endif %}
+
+{% endblock content %}
