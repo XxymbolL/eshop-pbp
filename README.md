@@ -122,12 +122,81 @@ Dengan migrasi, perubahan struktur database bisa **dilacak, dikelola, dan dijala
 ## Kenapa Django?
 Karena Django mencakup *FullStack* development sehingga dapat mengatur *FrontEnd* dan *BackEnd* secara mudah untuk pemula. Dengan menggunakan ==python==, Django menjadi alternatif yang banyak digunakan untuk pemula yang baru mempelajari dapat mengikuti dengan mudah disertai dengan dokumentasi yang lengkap.
 
-#### Apakah ada feedback untuk asisten dosen tutorial 1 yang telah kamu kerjakan sebelumnya?
-Keren :0, terimakasih sudah memberikan tutorial lengkap.
-![](yeah.gif)
 
+</details>
+<details>
+<summary><b>Tugas 3</b></summary>
+
+## checklist:
+- [x] Tambahkan 4 fungsi `views` baru untuk melihat objek yang sudah ditambahkan dalam format XML, JSON, XML _by ID_, dan JSON _by ID_.
+	- function baru dibuat pada views.py untuk menampilkan format-format tersebut.
+- [x] Membuat routing URL untuk masing-masing `views` yang telah ditambahkan pada poin 1.
+	```python
+	path('create-shoes/', create_shoes, name='create_shoes'),
+	path('shoes/<str:id>/', show_shoes, name='show_shoes'),
+	path('xml/', show_xml, name='show_xml'),
+	path('json/', show_json, name='show_json'),
+	path('xml/<str:shoes_id>/', show_xml_by_id, name='show_xml_by_id'),
+	path('json/<str:shoes_id>/', show_json_by_id, name='show_json_by_id'),
+	```
+- [x] Membuat halaman yang menampilkan data objek model yang memiliki tombol "Add" yang akan redirect ke halaman `form`, serta tombol "Detail" pada setiap data objek model yang akan menampilkan halaman detail objek.
+	```html
+	<a href="{% url 'main:create_shoes' %}">
+		<button>+ Add Shoes</button>
+	</a>
+	
+	...
+	...
+	...
+	
+	<a href="{% url 'main:show_shoes' shoes.id %}">
+		<button>Detail</button>
+	</a>
+	```
+- [x] Membuat halaman `form` untuk menambahkan objek model pada app sebelumnya.
+
+```python
+class ShoesForm(ModelForm):
+	class Meta:
+		model = Shoes
+		fields = ["name", "price", "description", "thumbnail"]
+```
+
+- [x] Membuat halaman yang menampilkan detail dari setiap data objek model.
+	Cek **shoes_details.html** pada /main/template/shoes_details.html
+---
+##  Pengunaan *data delivery* pada sebuah platform.
+
+Pada kasus project kali ini, data delivery yang dipakai adalah input user pada form yang di kirim ke database server sehingga data sepatu tetap tersimpan pada database. Hal ini diperlukan untuk mempermudah interaksi user dengan server.
+
+---
+## JSON or XML?
+Menurut saya, json memiliki format yang lebih mudah dibaca dari sisi pengguna sehingga mempermudah pengolahan data tersebut. Kepopuleran JSON mungkin juga karena hal tersebut, ditambah pengolahan JSON juga dapat langsung diolah oleh javascript.
+## fungsi dari method `is_valid()`
+`is_valid()` digunakan untuk mengecek input dari form user agar sesuai dengan dengan field model yang sudah di define pada *models.py*.
+## Fungsi **csrf_token**
+**csrf_token** digunakan untuk mengecek apakah csrf tersebut berasal dari website kita atau berasal dari sumber yang tidak diketahui yang menyebabkan terjadinya CSRF vulnerability[^2]. Maka dari itu penggunaan token dibutuhkan untuk mencegah terjadinya hal-hal yang tidak diinginkan.
+
+## Postman
+<details>
+<summary><b>Photos</b></summary>
+
+![](assets/postman1.png)
+![](assets/postman2.png)
+![](assets/postman3.png)
+![](assets/postman4.png)
+![](assets/postman5.png)
+
+</details>
 
 </details>
 
 ---
+
+#### Apakah ada feedback untuk asisten dosen tutorial x yang telah kamu kerjakan sebelumnya?
+Keren :0, terimakasih sudah memberikan tutorial lengkap.
+![](assets/yeah.gif)
+
+---
 [^1]:https://medium.com/@developerstacks/django-request-response-cycle-7165167f54c5
+[^2]:https://portswigger.net/web-security/csrf
