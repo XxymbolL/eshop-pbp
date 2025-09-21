@@ -2,6 +2,9 @@
 [link to PWS](https://rifqy-pradipta-alphashoes.pbp.cs.ui.ac.id/)
 
 ---
+
+
+
 <details>
 <Summary><b>Tugas 2</b></Summary>
 
@@ -191,6 +194,73 @@ Menurut saya, json memiliki format yang lebih mudah dibaca dari sisi pengguna se
 
 </details>
 
+<details>
+<summary><b>Tugas 4</b></summary>
+## checklist:
+- [x] Mengimplementasikan fungsi registrasi, login, dan logout untuk memungkinkan pengguna mengakses aplikasi sebelumnya sesuai dengan status login/logoutnya..
+	Fungsi register, login, dan logout dibuat pada *views.py*
+- [x] Membuat **dua** (2) akun pengguna dengan masing-masing **tiga** (3) _dummy data_ menggunakan model yang telah dibuat sebelumnya untuk setiap akun **di lokal**.
+	- User 1:
+	![](assets/SS-user1.png)
+	- User 2:
+	![](assets/SS-user2.png)
+
+- [x] Menghubungkan model `Product` dengan `User`.
+	Menambahkan user pada product database dan mengaitkannya menjadi seller user saat add product. Jadi jika user melakukan click detail product seller akan ditampilkan sebagai seller yang menjual sepatu. ![](assets/detail_seller.png)
+	
+- [x] Menampilkan detail informasi pengguna yang sedang _logged in_ seperti _username_ dan menerapkan _cookies_ seperti `last_login` pada halaman utama aplikasi.
+	penerapan `last_login` hanya tinggal menambahkan  `last_login': request.COOKIES.get('last_login', 'Never')` pada context di **views.py**. Sedangkan untuk menampilkan username yang sedang login dapat dilakukan dengan mengganti hardcoded username dengan `request.user.username`
+
+---
+##  Pertanyaan dan Jawaban:
+#### Apa itu Django `AuthenticationForm`? Jelaskan juga kelebihan dan kekurangannya.
+`AuthenticationForm` adalah form bawaan dari `django.contrib.auth.forms` yang menyediakan field *username* dan *password*, melakukan validasi credential melalui `authenticate()` dan menyediakan `form.get_user()` bila valid.
+**Kelebihan:**
+- Praktis karena merupakan template siap pakai untuk proses login.
+- Terintegrasi dengan sistem auth Django.
+- Aman, karena hanya menerima credential sesuai format, ada simple cek bila username dan password mirip.
+**Kekurangan:**
+- UI sederhana, perlu styling tambahan.
+- Tidak ada proteksi brute-force.
+#### Apa perbedaan antara autentikasi dan otorisasi? Bagaiamana Django mengimplementasikan kedua konsep tersebut?
+**Autentikasi (Authentication)** adalah verifikasi identitas, menandakan siapa yang sedang login saat ini.
+- Django menggunakan `authenticate()` lalu `login(request, user)`.
+- Form menggunakan `AuthenticationForm` untuk memfasilitasi input + validasi.
+
+**Otorisasi (Authorization)** adalah pengecekan hak akses, menandakan user yang sedang login saat ini dapat mengakses apa saja.
+- Modifier `@login_required` untuk memberikan authorization hanya kepada user yang sudah melakukan register dan login, jika tidak produk tidak akan ditampilkan dan di forward ke page login.
+#### Apa saja kelebihan dan kekurangan _session_ dan _cookies_ dalam konteks menyimpan _state_ di aplikasi web?
+**Session (server-side dan cookie hanya menyimpan session id)**
+- **Kelebihan:**
+    - Lebih aman karena data tidak disimpan di client.
+    - Bisa menyimpan data besar & kompleks.
+- **Kekurangan:**
+    - Memerlukan storage server sendiri untuk menyimpan session tersebut.
+    - Perlu perhatian jika ingin melakukan modifikasi storage, jika terhapus dengan tidak sengaja akan menjadi rumit.
+
+**Cookies (client-side)**
+- **Kelebihan:**
+    - Simpel; tidak butuh storage server.
+    - Cocok untuk setting yang tidak terlalu banyak, misal hanya asal user(ex: ID).
+- **Kekurangan:**
+    - Terbatas ukuran, hanya sekitar ~4KB.
+    - Dikirim tiap request.
+    - Rentan dimodifikasi oleh user lain.
+    - Rentan dicuri melalui XSS jika tidak `HttpOnly`.
+#### Apakah penggunaan _cookies_ aman secara _default_ dalam pengembangan web, atau apakah ada risiko potensial yang harus diwaspadai? Bagaimana Django menangani hal tersebut?
+Tidak. Cookie **tidak otomatis** aman, ada beberapa risiko seperti XSS, MITM, CSRF, dan tampering.
+**Risiko potensial:**
+- XSS → pencurian cookie jika function javascript tidak aman.
+- Sniffing → bocor bila tidak `Secure` + HTTP, hacker dapat memotong interaksi user dengan server melalui monitor mode dan melakukan sniffing pada network jika dilakukan pada protokol yang tidak aman seperti HTTP, baiknya gunakan HTTPS.
+- CSRF → eksploitasi session cookie antar site.
+- Tampering → mengubah nilai cookie biasa, biasanya menggubah variabel role menjadi admin jika tidak dilakukan validasi.
+**Bagaimana Django mengatasi:**
+- Default session cookie (`sessionid`) + server-side session storage → data sensitif tidak di client, sehingga penyerangan diatas sulit dilakukan.
+- `CsrfViewMiddleware` + `{% csrf_token %}` mencegah CSRF.
+
+</details>
+
+</details>
 ---
 
 #### Apakah ada feedback untuk asisten dosen tutorial x yang telah kamu kerjakan sebelumnya?

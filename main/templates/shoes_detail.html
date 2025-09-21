@@ -5,14 +5,14 @@
 <h1>{{ shoes.name }}</h1>
 
 <p>
-  <b>Price:</b> Rp {{ shoes.price}} |
+  <b>Price:</b> Rp {{ shoes.price }} |
   <b>Total Stock:</b> {{ shoes.total_stock }} |
   <b>Status:</b> {% if shoes.is_available %}Tersedia{% else %}Habis{% endif %}
 </p>
 
 {% if shoes.thumbnail %}
   <img src="{{ shoes.thumbnail }}" alt="{{ shoes.name }} thumbnail" width="300">
-  <br /><br />
+  <br><br>
 {% endif %}
 
 <p>{{ shoes.description|default:"(no description)" }}</p>
@@ -26,6 +26,12 @@
   </ul>
 {% else %}
   <p>(No sizes yet)</p>
+{% endif %}
+
+{% if shoes.user %}
+  <p>Seller: {{ shoes.user.username }}</p>
+{% else %}
+  <p>Seller: Anonymous</p>
 {% endif %}
 
 {% endblock content %}
