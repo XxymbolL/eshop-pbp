@@ -251,7 +251,7 @@ Menurut saya, json memiliki format yang lebih mudah dibaca dari sisi pengguna se
 #### Apakah penggunaan _cookies_ aman secara _default_ dalam pengembangan web, atau apakah ada risiko potensial yang harus diwaspadai? Bagaimana Django menangani hal tersebut?
 Tidak. Cookie **tidak otomatis** aman, ada beberapa risiko seperti XSS, MITM, CSRF, dan tampering.
 **Risiko potensial:**
-- XSS → pencurian cookie jika function javascript tidak aman.
+- XSS → pencurian cookie jika function javascript tidak aman[^3].
 - Sniffing → bocor bila tidak `Secure` + HTTP, hacker dapat memotong interaksi user dengan server melalui monitor mode dan melakukan sniffing pada network jika dilakukan pada protokol yang tidak aman seperti HTTP, baiknya gunakan HTTPS.
 - CSRF → eksploitasi session cookie antar site.
 - Tampering → mengubah nilai cookie biasa, biasanya menggubah variabel role menjadi admin jika tidak dilakukan validasi.
@@ -271,3 +271,4 @@ Keren :0, terimakasih sudah memberikan tutorial lengkap.
 ---
 [^1]:https://medium.com/@developerstacks/django-request-response-cycle-7165167f54c5
 [^2]:https://portswigger.net/web-security/csrf
+[^3]:https://portswigger.net/web-security/cross-site-scripting
