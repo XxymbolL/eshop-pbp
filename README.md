@@ -196,6 +196,7 @@ Menurut saya, json memiliki format yang lebih mudah dibaca dari sisi pengguna se
 
 <details>
 <summary><b>Tugas 4</b></summary>
+
 ## checklist:
 - [x] Mengimplementasikan fungsi registrasi, login, dan logout untuk memungkinkan pengguna mengakses aplikasi sebelumnya sesuai dengan status login/logoutnya..
 	Fungsi register, login, dan logout dibuat pada *views.py*
