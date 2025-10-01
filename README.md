@@ -263,6 +263,7 @@ Tidak. Cookie **tidak otomatis** aman, ada beberapa risiko seperti XSS, MITM, CS
 
 <details>
 <summary><b>Tugas 5</b></summary>
+
 ## checklist:
 - [x]  Implementasikan fungsi untuk menghapus dan mengedit _product_.
 ```python
