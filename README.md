@@ -3,8 +3,6 @@
 
 ---
 
-
-
 <details>
 <Summary><b>Tugas 2</b></Summary>
 
@@ -262,6 +260,101 @@ Tidak. Cookie **tidak otomatis** aman, ada beberapa risiko seperti XSS, MITM, CS
 </details>
 
 </details>
+
+<details>
+<summary><b>Tugas 5</b></summary>
+## checklist:
+- [x]  Implementasikan fungsi untuk menghapus dan mengedit _product_.
+```python
+@login_required(login_url='/login')
+def edit_shoes(request, id):
+    shoes = get_object_or_404(Shoes, pk=id)
+    if request.method == "POST":
+        form = ShoesForm(request.POST, instance=shoes)
+        formset = SizeFormSet(request.POST, instance=shoes)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, "Shoes updated!")
+            return redirect('main:show_main')
+    else:
+        form = ShoesForm(instance=shoes)
+        formset = SizeFormSet(instance=shoes)
+    return render(request, "edit_shoes.html", {"form": form, "formset": formset, "shoes": shoes})
+
+def delete_shoes(request, id):
+    shoes = get_object_or_404(Shoes, pk=id)
+    shoes.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
+```
+- [x] Kustomisasi desain pada _template_ HTML yang telah dibuat pada tugas-tugas sebelumnya menggunakan CSS atau CSS framework (seperti Bootstrap, Tailwind, Bulma) dengan ketentuan sebagai berikut:
+	- [x] Kustomisasi halaman _login_, _register_, tambah _product_, edit _product_, dan detail _product_ semenarik mungkin. 
+	- [x] Kustomisasi halaman daftar _product_ menjadi lebih menarik dan _responsive_. Kemudian, perhatikan kondisi berikut:
+		- [x] Jika pada aplikasi belum ada _product_ yang tersimpan, halaman daftar _product_ akan menampilkan gambar dan pesan bahwa belum ada _product_ yang terdaftar.
+		- [x] Jika sudah ada _product_ yang tersimpan, halaman daftar _product_ akan menampilkan detail setiap _product_ dengan menggunakan _**card**_ (**tidak boleh sama persis dengan desain pada Tutorial!**).
+	pertama library tailwind dimuat di base.html. Disini saya menggunakan warna mirip web sepatu *nike*. **login.html** dan **register.html** diberi background memakai `static/image/background.jpg`. **shoes_detail.html** menampilkan judul, harga, stok, status, gambar produk atau fallback `noproduct.png`, daftar ukuran, serta tombol *Edit/Delete* untuk pemilik. 
+- [x] Untuk setiap _**card product**_, buatlah dua buah _button_ untuk mengedit dan menghapus _product_ pada _**card**_ tersebut!
+	Di **main.html**:
+	- Kondisi `{% if not shoes_list %}` menampilkan panel sederhana berisi gambar **noproduct.png**, judul “No products yet”, dan tombol “Add Shoes”.
+	- Jika ada, buat grid responsif Tailwind: `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6` dan setiap item merender partial **card_shoe.html**.
+	- Jika `shoes.thumbnail` ada -> tampilkan gambar. Jika tidak -> fallback ke **noimage.png** agar selalu ada visual. Yang ditampilkan adalah judul, harga, total stok, link “Details”.
+    - Tombol *Edit/Delete* muncul hanya bila `user.is_authenticated and shoes.user == user`.
+- [x] Buatlah _navigation bar_ (_navbar_) untuk fitur-fitur pada aplikasi yang _responsive_ terhadap perbedaan ukuran _device_, khususnya _mobile_ dan _desktop_.
+	pada **card_shoe.html**:
+	```html
+{% if user.is_authenticated and shoes.user == user %}
+  <div class="flex items-center gap-3 text-sm">
+    <a href="{% url 'main:edit_shoes' shoes.id %}" class="text-black hover:underline">Edit</a>
+    <a href="{% url 'main:delete_shoes' shoes.id %}" class="text-black hover:underline">Delete</a>
+  </div>
+{% endif %}
+	```
+	Tombol hanya terlihat untuk pemilik produk, namun **pengamanan utama** tetap ada di view (cek kepemilikan) agar aman walau tombol disembunyikan.
+---
+##  Pertanyaan dan Jawaban:
+#### Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
+1. `!important`
+2. **Inline style** pada elemen (mis. `<div style="color:red">`)
+3. **ID selector** (`#header`)
+4. **Class / attribute / pseudo-class** (`.btn`, `[type="text"]`, `:hover`)
+5. **Element / pseudo-element** (`h1`, `p`, `::after`)
+6. **Urutan muncul**: jika prioritas sama, **deklarasi yang paling akhir** ditulis menang
+contoh:
+`<h1 id="title" class="headline">Hello</h1>`
+```css
+h1 { color: black; }               /* -> black */
+.headline { color: blue; }         /* -> blue > black */
+#title { color: green; }           /* -> green > blue > black */
+#title { color: orange !important; } /* -> orange > green > blue > black */
+```
+#### Mengapa _responsive design_ menjadi konsep yang penting dalam pengembangan aplikasi _web_? Berikan contoh aplikasi yang sudah dan belum menerapkan _responsive design_, serta jelaskan mengapa!
+Karena pengguna dari web service berasal dari berbagai device, mulai dari handphone, laptop, pc, atau bahkan tv. Penggunaan responsive desing penting agar web memiliki accesibility yang bagus sehingga user experience tidak terganggu. 
+
+Kebanyakan applikasi e-commerce sekarang sudah menerapkan responsive design, seperti tokopedia dan shopee. Sedangkan, untuk web yang belum menerapkan responsive design yaitu seperti contoh [berikut](https://dequeuniversity.com/library/responsive/1-non-responsive), teks pada unresponsive design tidak menyesuaikan device pengguna sehingga sebagian teks tidak akan terbaca.
+#### Jelaskan perbedaan antara _margin_, _border_, dan _padding_, serta cara untuk mengimplementasikan ketiga hal tersebut!
+penggambaran CSS Box adalah sebagai berikut:
+![](assets/cssbox.png)
+- **Padding**: ruang **di dalam** border, mengelilingi konten.
+- **Border**: garis tepi mengelilingi padding + konten.
+- **Margin**: ruang **di luar** border, memisahkan elemen dari elemen lain.
+contoh:
+```css
+.box {
+  /* content di tengah */
+  padding: 16px;            /* ruang dalam, menambah “isi” kotak */
+  border: 2px solid #E5E5E5;/* garis tepi */
+  margin: 24px;             /* jarak ke elemen lain di sekeliling */
+}
+```
+#### Jelaskan konsep _flex box_ dan _grid layout_ beserta kegunaannya!
+*flex box* merupakan layout **1 dimensi** (baris atau kolom). Cocok untuk menyusun item sejajar. Biasannya digunakan pada navbar atau menampilkan card dengan model 1 arah. Punya properti inti: `display:flex`, `gap`, `justify-content`, `align-items`, `flex-direction`.
+
+*grid layout* punya konsep seperti namanya, yaitu membagi ruang menjadi baris dan kolom seperti tabel. Cocok untuk menampilkan banyak produk dalam 1 page. Punya properti inti: `display:grid`, `grid-template-columns`, `grid-template-rows`, `gap`.
+
+</details>
+
+</details>
+
 ---
 
 #### Apakah ada feedback untuk asisten dosen tutorial x yang telah kamu kerjakan sebelumnya?

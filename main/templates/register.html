@@ -1,32 +1,39 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block meta %}
-<title>Register</title>
+<title>Register - Alpha Shoes</title>
 {% endblock meta %}
 
 {% block content %}
+<div class="min-h-screen w-full bg-cover bg-center" style="background-image: url(&quot;{% static 'image/background.jpg' %}&quot;);">
+  <div class="min-h-screen w-full bg-white/70 flex items-center justify-center px-6 py-12">
+    <div class="w-full max-w-md">
+      <div class="bg-white border border-gray-200 rounded-lg p-6 sm:p-8 form-style">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6">Create Account</h2>
 
-<div>
-  <h1>Register</h1>
+        {% if form.errors %}
+          <ul class="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3">
+            {% for field, errors in form.errors.items %}
+              {% for error in errors %}
+                <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+          </ul>
+        {% endif %}
 
-  <form method="POST">
-    {% csrf_token %}
-    <table>
-      {{ form.as_table }}
-      <tr>
-        <td></td>
-        <td><input type="submit" name="submit" value="Daftar" /></td>
-      </tr>
-    </table>
-  </form>
+        <form method="POST" action="" class="space-y-5">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="w-full bg-black text-white font-medium py-3 rounded-md hover:bg-neutral-800">Create Account</button>
+        </form>
 
-  {% if messages %}
-  <ul>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
+        <p class="mt-6 text-center text-sm text-gray-600">
+          Already have an account?
+          <a href="{% url 'main:login' %}" class="underline text-gray-900">Sign In</a>
+        </p>
+      </div>
+    </div>
+  </div>
 </div>
-
 {% endblock content %}

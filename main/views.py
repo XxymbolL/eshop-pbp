@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.core import serializers
-from main.forms import ShoesForm, OneSizeForm
+from main.forms import ShoesForm, SizeFormSet
 from main.models import ShoeSize, Shoes
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import authenticate, login, logout
@@ -31,27 +31,22 @@ def show_main(request):
     }
     return render(request, "main.html", context)
 
-
+@login_required(login_url='/login')
 def create_shoes(request):
-    shoe_form = ShoesForm(request.POST or None)
-    size_form = OneSizeForm(request.POST or None)
+    shoes = Shoes(user=request.user)
+    if request.method == "POST":
+        form = ShoesForm(request.POST, instance=shoes)
+        formset = SizeFormSet(request.POST, instance=shoes)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, "Shoes created!")
+            return redirect('main:show_main')
+    else:
+        form = ShoesForm(instance=shoes)
+        formset = SizeFormSet(instance=shoes)
+    return render(request, "create_shoes.html", {"form": form, "formset": formset})
 
-    if request.method == "POST" and shoe_form.is_valid() and size_form.is_valid():
-        shoes = shoe_form.save(commit=False)
-        shoes.user = request.user
-        shoes.save()
-        ShoeSize.objects.create(
-            shoes=shoes,
-            size=size_form.cleaned_data["size"],
-            stock=size_form.cleaned_data["stock"],
-        )
-        return redirect('main:show_main')
-
-    context = {
-        'form': shoe_form,
-        'size_form': size_form,
-    }
-    return render(request, "create_shoes.html", context)
 
 @login_required(login_url='/login')
 def show_shoes(request, id):
@@ -121,3 +116,25 @@ def logout_user(request):
     response = HttpResponseRedirect(reverse('main:login'))
     response.delete_cookie('last_login')
     return response
+
+@login_required(login_url='/login')
+def edit_shoes(request, id):
+    shoes = get_object_or_404(Shoes, pk=id)
+    if request.method == "POST":
+        form = ShoesForm(request.POST, instance=shoes)
+        formset = SizeFormSet(request.POST, instance=shoes)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, "Shoes updated!")
+            return redirect('main:show_main')
+    else:
+        form = ShoesForm(instance=shoes)
+        formset = SizeFormSet(instance=shoes)
+    return render(request, "edit_shoes.html", {"form": form, "formset": formset, "shoes": shoes})
+
+def delete_shoes(request, id):
+    shoes = get_object_or_404(Shoes, pk=id)
+    shoes.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
+
