@@ -302,15 +302,17 @@ def delete_shoes(request, id):
     - Tombol *Edit/Delete* muncul hanya bila `user.is_authenticated and shoes.user == user`.
 - [x] Buatlah _navigation bar_ (_navbar_) untuk fitur-fitur pada aplikasi yang _responsive_ terhadap perbedaan ukuran _device_, khususnya _mobile_ dan _desktop_.
 	pada **card_shoe.html**:
-	```html
+```html
 {% if user.is_authenticated and shoes.user == user %}
   <div class="flex items-center gap-3 text-sm">
     <a href="{% url 'main:edit_shoes' shoes.id %}" class="text-black hover:underline">Edit</a>
     <a href="{% url 'main:delete_shoes' shoes.id %}" class="text-black hover:underline">Delete</a>
   </div>
 {% endif %}
-	```
-	Tombol hanya terlihat untuk pemilik produk, namun **pengamanan utama** tetap ada di view (cek kepemilikan) agar aman walau tombol disembunyikan.
+```
+	
+Tombol hanya terlihat untuk pemilik produk, namun **pengamanan utama** tetap ada di view (cek kepemilikan) agar aman walau tombol disembunyikan.
+
 ---
 ##  Pertanyaan dan Jawaban:
 #### Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
