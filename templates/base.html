@@ -2,15 +2,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {% block meta %}
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    {% endblock meta %}
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{% static 'css/global.css' %}"/>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% block meta %}<title>Alpha Shoes</title>{% endblock meta %}
+  <link rel="stylesheet" href="{% static 'css/global.css' %}">
 </head>
+<body class="bg-gray-50 text-gray-900">
 
-<body>
-    {% block content %} {% endblock content %}
+  {% block content %}{% endblock content %}
+
+  {% include 'toast.html' %}
+  {% include 'modal_shoe.html' %}
+  {% include 'confirm_delete.html' %}
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="{% static 'js/toast.js' %}"></script>
+  <script>
+    function getCSRF() {
+      const found = document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)');
+      if (found) return found.pop();
+      const input = document.querySelector('input[name=csrfmiddlewaretoken]');
+      return input ? input.value : '';
+    }
+    window.getCSRF = getCSRF;
+
+    function formatRupiah(value) {
+      const n = Number(value || 0);
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(n);
+    }
+    window.formatRupiah = formatRupiah;
+  </script>
+  {% block scripts %}{% endblock scripts %}
 </body>
 </html>

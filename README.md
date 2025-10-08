@@ -1,6 +1,7 @@
 # Tugas PBP : Football Shop - Alpha shoes
 [link to PWS](https://rifqy-pradipta-alphashoes.pbp.cs.ui.ac.id/)
 
+
 ---
 
 <details>
@@ -353,6 +354,62 @@ contoh:
 *flex box* merupakan layout **1 dimensi** (baris atau kolom). Cocok untuk menyusun item sejajar. Biasannya digunakan pada navbar atau menampilkan card dengan model 1 arah. Punya properti inti: `display:flex`, `gap`, `justify-content`, `align-items`, `flex-direction`.
 
 *grid layout* punya konsep seperti namanya, yaitu membagi ruang menjadi baris dan kolom seperti tabel. Cocok untuk menampilkan banyak produk dalam 1 page. Punya properti inti: `display:grid`, `grid-template-columns`, `grid-template-rows`, `gap`.
+
+</details>
+
+</details>
+
+<details>
+<summary><b>Tugas 6</b></summary>
+
+## checklist:
+- [x]  Mengubah fitur - fitur tugas sebelumnya menggunakan AJAX.
+	- [x] Fitur CRUD (Create Read Update Delete) product menggunakan AJAX (tidak boleh menggunakan dari context render kecuali untuk keperluan AJAX). 
+	- [x] Mengubah Login dan Register menggunakan AJAX.
+- [x] Tampilan baru
+	- [x]  Membuat tombol yang akan menampilkan modal untuk _create_ dan _update_ product dalam bentuk form.
+	- [x] Membuat modal konfirmasi saat pengguna ingin menghapus product
+	- [x] Saat melakukan aksi dari modal, product akan di-_refresh_ tanpa perlu melakukan _reload_ halaman (Refresh melalui browser).
+	- [x] Membuat tombol _refresh_ yang akan menampilkan list product terbaru tanpa perlu _reload_ halaman (Refresh melalui browser)
+	- [x] Membuat _Loading_, _Empty_, dan _Error_ state melalui Javascript.
+	- [x] Menampilkan Toast saat _create_, _update_, atau _delete_ product dan saat _login_, _logout_, dan _register_ **(tidak boleh sama persis dengan tutorial)**.
+---
+##  Pertanyaan dan Jawaban:
+#### Apa perbedaan antara synchronous request dan asynchronous request?
+- **Synchronous:** User menunggu respons sebelum lanjut. UI tidak berubah dan bergerak sampai server membalas.
+- **Asynchronous:** User tidak menunggu. UI tetap responsif dan ketika respons datang, handler dijalankan.
+#### Bagaimana AJAX bekerja di Django (alur request–response)?
+1. User melakukan suatu event dan menjalankan script JS.
+2. JS mengirim HTTP request ke URL Django tanpa reload halaman.
+3. URL Django memetakan request ke view.
+4. View Django memproses dan balas JSON.
+5. Client menerima JSON.
+6. Render ulang sebagian halaman (misal ada perubahan di `grid.innerHTML = ...`).
+7. Tampilkan **loading/empty/error** state sesuai hasil.
+8. Tampilkan **toast** pada success/error.
+#### Apa keuntungan menggunakan AJAX dibandingkan render biasa di Django?
+- **Tanpa reload**, hanya bagian tertentu yang berubah (grid produk, modal), UX lebih bagus.
+- **State terjaga**, filter “My Products”, posisi scroll, dan modal tidak hilang.
+- **Feedback jelas**, bisa menampilkan loading/empty/error state + toast.
+- **Hemat data**, kirim JSON, bukan HTML penuh.
+- **API-friendly**, endpoint JSON bisa dipakai aplikasi lain.
+#### Bagaimana cara memastikan keamanan saat menggunakan AJAX untuk fitur Login dan Register di Django?
+1. CSRF
+```js
+fetch("{% url 'main:login_ajax' %}", {
+  method: 'POST',
+  headers: { 'X-CSRFToken': getCSRF() },
+  body: new FormData(form),
+  credentials: 'same-origin'
+})
+```
+2. HTTPS
+3. Cookie & session aman
+#### Bagaimana AJAX mempengaruhi pengalaman pengguna (User Experience) pada website?
+- **Lebih cepat**: interaksi CRUD terasa instan (tanpa pindah halaman) karena langsung diubah di user side.
+- **Konten lebih update**: loading/empty/error state di lokal, sehingga user paham apa yang terjadi.
+- **Notifikasi ringan**: toast pada create/update/delete/login/register, tidak mengganggu alur.
+- **Modal**: form di modal (create/edit) mengurangi redirect site.
 
 </details>
 

@@ -1,29 +1,33 @@
 <nav class="bg-white border-b border-gray-200">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="h-16 flex items-center justify-between">
+      <!-- Brand + desktop links -->
       <div class="flex items-center gap-6">
-        <a href="{% url 'main:show_main' %}" class="text-2xl font-bold text-black tracking-tight">Alpha Shoes</a>
+        <a href="{% url 'main:show_main' %}" class="text-2xl font-bold">Alpha Shoes</a>
         <div class="hidden md:flex items-center gap-6">
-          <a href="{% url 'main:show_main' %}" class="text-black hover:underline">Home</a>
-          <a href="{% url 'main:create_shoes' %}" class="text-black hover:underline">Add Shoes</a>
+          <a href="{% url 'main:show_main' %}" class="hover:underline">Home</a>
+          <a href="{% url 'main:create_shoes' %}" class="hover:underline">Add Shoes</a>
         </div>
       </div>
 
+      <!-- Right side (auth) -->
       <div class="hidden md:flex items-center gap-6">
         {% if user.is_authenticated %}
           <div class="text-right">
-            <div class="text-sm font-medium text-black">{{ name|default:user.username }}</div>
-            <div class="text-xs text-gray-500">{{ npm|default:"Student" }} - {{ class|default:"Class" }}</div>
+            <div class="text-sm font-medium">{{ name|default:user.username }}</div>
+            <div class="text-xs text-gray-500">{{ npm|default:"Student" }} • {{ class|default:"Class" }}</div>
           </div>
-          <a href="{% url 'main:logout' %}" class="px-4 py-2 bg-black text-white rounded-md hover:bg-neutral-800">Logout</a>
+          <a id="logoutLink" href="{% url 'main:logout' %}"
+             class="px-4 py-2 bg-black text-white rounded-md hover:bg-neutral-800">Logout</a>
         {% else %}
-          <a href="{% url 'main:login' %}" class="text-black hover:underline">Login</a>
+          <a href="{% url 'main:login' %}" class="hover:underline">Login</a>
           <a href="{% url 'main:register' %}" class="px-4 py-2 bg-black text-white rounded-md hover:bg-neutral-800">Register</a>
         {% endif %}
       </div>
 
-      <button id="mobile-menu-button" class="md:hidden p-2 border border-gray-300 rounded" aria-controls="mobile-menu" aria-expanded="false">
-        <span class="sr-only">Menu</span>
+      <!-- Mobile button -->
+      <button id="menuBtn" class="md:hidden p-2 border border-gray-300 rounded" aria-controls="mobileMenu" aria-expanded="false">
+        <span class="sr-only">Open menu</span>
         <div class="w-5 h-0.5 bg-black mb-1"></div>
         <div class="w-5 h-0.5 bg-black mb-1"></div>
         <div class="w-5 h-0.5 bg-black"></div>
@@ -31,20 +35,21 @@
     </div>
   </div>
 
-  <div id="mobile-menu" class="md:hidden hidden border-t border-gray-200 bg-white">
+  <!-- Mobile menu -->
+  <div id="mobileMenu" class="md:hidden hidden border-t border-gray-200 bg-white">
     <div class="px-4 py-4 space-y-3">
-      <a href="{% url 'main:show_main' %}" class="block text-black">Home</a>
-      <a href="{% url 'main:create_shoes' %}" class="block text-black">Add Shoes</a>
+      <a href="{% url 'main:show_main' %}" class="block">Home</a>
+      <a href="{% url 'main:create_shoes' %}" class="block">Add Shoes</a>
 
       <div class="pt-3 border-t border-gray-200">
         {% if user.is_authenticated %}
           <div class="mb-3 text-sm">
-            <div class="font-medium text-black">{{ name|default:user.username }}</div>
-            <div class="text-gray-500">{{ npm|default:"Student" }} - {{ class|default:"Class" }}</div>
+            <div class="font-medium">{{ name|default:user.username }}</div>
+            <div class="text-gray-500">{{ npm|default:"Student" }} • {{ class|default:"Class" }}</div>
           </div>
           <a href="{% url 'main:logout' %}" class="block w-full text-center px-4 py-2 bg-black text-white rounded-md hover:bg-neutral-800">Logout</a>
         {% else %}
-          <a href="{% url 'main:login' %}" class="block text-black">Login</a>
+          <a href="{% url 'main:login' %}" class="block">Login</a>
           <a href="{% url 'main:register' %}" class="mt-2 block w-full text-center px-4 py-2 bg-black text-white rounded-md hover:bg-neutral-800">Register</a>
         {% endif %}
       </div>
@@ -52,14 +57,42 @@
   </div>
 
   <script>
-    const btn = document.getElementById('mobile-menu-button');
-    const menu = document.getElementById('mobile-menu');
-    if (btn && menu) {
-      btn.addEventListener('click', () => {
-        const isHidden = menu.classList.contains('hidden');
-        menu.classList.toggle('hidden', !isHidden);
-        btn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+    (function () {
+      const btn = document.getElementById('menuBtn');
+      const menu = document.getElementById('mobileMenu');
+      if (!btn || !menu) return;
+
+      btn.addEventListener('click', function () {
+        const willOpen = menu.classList.contains('hidden');
+        menu.classList.toggle('hidden', !willOpen);
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
       });
-    }
+    })();
+
+    (function () {
+      const link = document.getElementById('logoutLink');
+      if (!link) return;
+
+      const ajaxUrl = "{% url 'main:logout_ajax' %}";
+      link.addEventListener('click', async function (e) {
+        e.preventDefault();
+        try {
+          const resp = await fetch(ajaxUrl, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCSRF() },
+            credentials: 'same-origin'
+          });
+          const data = await resp.json().catch(() => ({}));
+          if (resp.ok && data.ok) {
+            if (window.showToast) showToast('Logged out');
+            window.location.href = data.redirect || "{% url 'main:show_main' %}";
+          } else {
+            window.location.href = link.getAttribute('href');
+          }
+        } catch (_) {
+          window.location.href = link.getAttribute('href');
+        }
+      });
+    })();
   </script>
 </nav>

@@ -6,11 +6,11 @@
 {% endblock meta %}
 
 {% block content %}
-<div class="min-h-screen w-full bg-cover bg-center" style="background-image: url(&quot;{% static 'image/background.jpg' %}&quot;);">
+<div class="min-h-screen w-full bg-cover bg-center" style="background-image: url('{% static 'image/background.jpg' %}');">
   <div class="min-h-screen w-full bg-white/70 flex items-center justify-center px-6 py-12">
     <div class="w-full max-w-md">
       <div class="bg-white border border-gray-200 rounded-lg p-6 sm:p-8 form-style">
-        <h2 class="text-2xl font-semibold text-gray-900 mb-6">Create Account</h2>
+        <h2 class="text-2xl font-semibold mb-6">Create Account</h2>
 
         {% if form.errors %}
           <ul class="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3">
@@ -22,18 +22,86 @@
           </ul>
         {% endif %}
 
-        <form method="POST" action="" class="space-y-5">
+        <form id="registerForm" method="POST" class="space-y-5">
           {% csrf_token %}
           {{ form.as_p }}
-          <button type="submit" class="w-full bg-black text-white font-medium py-3 rounded-md hover:bg-neutral-800">Create Account</button>
+          <div id="registerErrors" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3"></div>
+          <button id="btnRegister" type="submit" class="w-full bg-black text-white font-medium py-3 rounded-md hover:bg-neutral-800">Create Account</button>
         </form>
 
         <p class="mt-6 text-center text-sm text-gray-600">
           Already have an account?
-          <a href="{% url 'main:login' %}" class="underline text-gray-900">Sign In</a>
+          <a href="{% url 'main:login' %}" class="underline">Sign In</a>
         </p>
       </div>
     </div>
   </div>
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+  const REGISTER_URL = "{% url 'main:register_ajax' %}";
+  const regForm = document.getElementById('registerForm');
+  const regErrors = document.getElementById('registerErrors');
+  const btnReg = document.getElementById('btnRegister');
+
+  regForm.addEventListener('submit', async function(e){
+    e.preventDefault();
+    regErrors.classList.add('hidden');
+    regErrors.innerHTML = '';
+    btnReg.disabled = true;
+
+    try{
+      const resp = await fetch(REGISTER_URL, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRF() },
+        body: new FormData(regForm),
+        credentials: 'same-origin'
+      });
+
+      const data = await resp.json().catch(() => ({}));
+
+      if (resp.ok && data.ok){
+        if (window.showToast) showToast('Account created!');
+        setTimeout(() => {
+          window.location.href = data.redirect || "{% url 'main:show_main' %}";
+        }, 1200);
+      } else {
+        const errorsPayload = data.errors;
+        let messages = [];
+        if (Array.isArray(errorsPayload)) {
+          messages = errorsPayload;
+        } else if (errorsPayload && typeof errorsPayload === 'object') {
+          messages = Object.keys(errorsPayload).map(function (field) {
+            const val = errorsPayload[field];
+            const arr = Array.isArray(val) ? val : [val];
+            const label = field === '__all__' ? '' : field + ': ';
+            return label + arr.filter(Boolean).join(', ');
+          });
+        } else if (typeof errorsPayload === 'string') {
+          messages = [errorsPayload];
+        }
+
+        if (!messages.length) messages = ['Register failed'];
+
+        regErrors.innerHTML = messages.map(function (msg) {
+          return '<div>' + msg + '</div>';
+        }).join('');
+        regErrors.classList.remove('hidden');
+
+        const toastMsg = messages.find(function (msg) { return msg && String(msg).trim().length; }) || 'Register failed';
+        if (window.showToast) showToast(toastMsg);
+      }
+    } catch (err){
+      console.error(err);
+      const failMessage = 'Network error. Please try again.';
+      regErrors.textContent = failMessage;
+      regErrors.classList.remove('hidden');
+      if (window.showToast) showToast((err && err.message) || failMessage);
+    } finally {
+      btnReg.disabled = false;
+    }
+  });
+</script>
+{% endblock scripts %}

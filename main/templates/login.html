@@ -6,11 +6,11 @@
 {% endblock meta %}
 
 {% block content %}
-<div class="min-h-screen w-full bg-cover bg-center" style="background-image: url('{% static 'image/background.jpg' %}');">
+<div class="min-h-screen w-full bg-cover bg-center" style="background-image: url({% static 'image/background.jpg' %});">
   <div class="min-h-screen w-full bg-white/70 flex items-center justify-center px-6 py-12">
     <div class="w-full max-w-md">
       <div class="bg-white border border-gray-200 rounded-lg p-6 sm:p-8 form-style">
-        <h1 class="text-2xl font-bold text-gray-900 mb-6">Sign In</h1>
+        <h1 class="text-2xl font-bold mb-6">Sign In</h1>
 
         {% if form.non_field_errors %}
           <ul class="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3">
@@ -20,18 +20,67 @@
           </ul>
         {% endif %}
 
-        <form method="POST" class="space-y-5">
+        <form id="loginForm" method="POST" class="space-y-5">
           {% csrf_token %}
           {{ form.as_p }}
-          <button type="submit" class="w-full bg-black text-white font-medium py-3 rounded-md hover:bg-neutral-800">Sign In</button>
+          <button id="btnLogin" type="submit" class="w-full bg-black text-white font-medium py-3 rounded-md hover:bg-neutral-800">Sign In</button>
+          <div id="loginErrors" class="hidden bg-red-50 border border-red-200 text-red-700 rounded p-3 text-sm"></div>
         </form>
 
         <p class="mt-6 text-center text-sm text-gray-600">
           Don’t have an account?
-          <a href="{% url 'main:register' %}" class="underline text-gray-900">Register</a>
+          <a href="{% url 'main:register' %}" class="underline">Register</a>
         </p>
       </div>
     </div>
   </div>
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+  const form = document.getElementById('loginForm');
+  const btn = document.getElementById('btnLogin');
+  const box = document.getElementById('loginErrors');
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    box.classList.add('hidden');
+    box.innerHTML = '';
+    btn.disabled = true;
+
+    try {
+      const resp = await fetch("{% url 'main:login_ajax' %}", {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'X-CSRFToken': getCSRF() },
+        credentials: 'same-origin'
+      });
+
+      const data = await resp.json().catch(() => ({}));
+
+      if (resp.ok && data.ok) {
+        if (window.showToast) showToast('Welcome back!' + (data.username ? ' ' + data.username : ''));
+        setTimeout(() => {
+          window.location.href = data.redirect || "{% url 'main:show_main' %}";
+        }, 1200);
+      } else {
+        const errorList = (data && Array.isArray(data.errors)) ? data.errors : [];
+        const errs = errorList.length ? errorList : ['Login failed'];
+        box.innerHTML = errs.map(function(msg){ return '<div>• ' + msg + '</div>'; }).join('');
+        box.classList.remove('hidden');
+        const toastMsg = errs.find(function (msg) { return msg && String(msg).trim().length; }) || 'Login failed';
+        if (window.showToast) showToast(toastMsg);
+      }
+    } catch (err) {
+      console.error(err);
+      const failMessage = 'Error. Please try again.';
+      box.innerHTML = failMessage;
+      box.classList.remove('hidden');
+      if (window.showToast) showToast((err && err.message) || failMessage);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+{% endblock scripts %}

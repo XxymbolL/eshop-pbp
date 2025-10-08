@@ -1,0 +1,217 @@
+{% load static %}
+<div id="ModalOverlay" class="fixed inset-0 bg-black/40 hidden z-40"></div>
+
+<div id="ModalSheet" class="fixed inset-x-0 bottom-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:w-[640px] bg-white border border-gray-200 rounded-t-2xl md:rounded-2xl shadow-xl hidden z-50">
+  <div class="p-6">
+    <div class="flex items-start justify-between mb-4">
+      <h3 id="ModalTitle" class="text-xl font-semibold">Add Shoes</h3>
+      <button id="ModalClose" class="p-2 rounded hover:bg-gray-100" aria-label="Close">✕</button>
+    </div>
+
+    <form id="ModalForm" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="id" id="f_id">
+
+      <div>
+        <label for="f_name" class="block text-sm font-medium mb-1">Name</label>
+        <input id="f_name" name="name" type="text" class="w-full border rounded px-3 py-2" required>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="f_price" class="block text-sm font-medium mb-1">Price (Rp)</label>
+          <input id="f_price" name="price" type="number" min="0" class="w-full border rounded px-3 py-2" required>
+        </div>
+        <div>
+          <label for="f_thumbnail" class="block text-sm font-medium mb-1">Thumbnail URL</label>
+          <input id="f_thumbnail" name="thumbnail" type="url" class="w-full border rounded px-3 py-2">
+        </div>
+      </div>
+
+      <div>
+        <label for="f_description" class="block text-sm font-medium mb-1">Description</label>
+        <textarea id="f_description" name="description" rows="4" class="w-full border rounded px-3 py-2"></textarea>
+      </div>
+
+      <div class="pt-2">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-base font-semibold">Sizes</label>
+          <button type="button" id="btnAddSize" class="px-3 py-1 border rounded hover:bg-gray-100 text-sm">Add size</button>
+        </div>
+        <div id="SizeList" class="space-y-2"></div>
+        <p class="text-xs text-gray-500 mt-1">Supported sizes: 35–49. Leave unused rows empty or remove them.</p>
+      </div>
+
+      <div id="ModalErrors" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3"></div>
+
+      <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+        <button type="button" id="ModalCancel" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
+        <button type="submit" id="ModalSubmit" class="flex-1 px-4 py-2 bg-black text-white rounded hover:bg-neutral-800">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const URL_CREATE = "{% url 'main:create_shoes_ajax' %}";
+  const URL_EDIT = "{% url 'main:update_shoes_ajax' '00000000-0000-0000-0000-000000000000' %}";
+  const URL_GET = "{% url 'main:shoes_json_by_id' '00000000-0000-0000-0000-000000000000' %}";
+
+  const modalOverlay = document.getElementById('ModalOverlay');
+  const modalSheet = document.getElementById('ModalSheet');
+  const modalTitle = document.getElementById('ModalTitle');
+  const modalForm = document.getElementById('ModalForm');
+  const modalErrors = document.getElementById('ModalErrors');
+  const modalSubmit = document.getElementById('ModalSubmit');
+  const btnClose = document.getElementById('ModalClose');
+  const btnCancel = document.getElementById('ModalCancel');
+
+  const sizeList = document.getElementById('SizeList');
+  const btnAddSize = document.getElementById('btnAddSize');
+
+  function openModal() {
+    modalOverlay.classList.remove('hidden');
+    modalSheet.classList.remove('hidden');
+  }
+  function closeModal() {
+    modalOverlay.classList.add('hidden');
+    modalSheet.classList.add('hidden');
+  }
+  btnClose.addEventListener('click', closeModal);
+  btnCancel.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', closeModal);
+
+  function resetForm() {
+    modalForm.reset();
+    document.getElementById('f_id').value = '';
+    modalErrors.classList.add('hidden');
+    modalErrors.innerHTML = '';
+    sizeList.innerHTML = '';
+    addSizeRow();
+  }
+
+  function addSizeRow(valueSize, valueStock) {
+    const row = document.createElement('div');
+    row.className = 'grid grid-cols-12 gap-2 items-end';
+    row.innerHTML = `
+      <div class="col-span-5">
+        <label class="block text-sm mb-1">Size</label>
+        <input name="size[]" type="text" class="w-full border rounded px-3 py-2" value="${valueSize || ''}" placeholder="e.g., 42">
+      </div>
+      <div class="col-span-5">
+        <label class="block text-sm mb-1">Stock</label>
+        <input name="stock[]" type="number" min="0" class="w-full border rounded px-3 py-2" value="${valueStock || ''}">
+      </div>
+      <div class="col-span-2">
+        <button type="button" class="w-full px-3 py-2 border rounded hover:bg-gray-100 remove-size">Remove</button>
+      </div>
+    `;
+    sizeList.appendChild(row);
+    row.querySelector('.remove-size').addEventListener('click', function() {
+      row.remove();
+      if (!sizeList.children.length) addSizeRow();
+    });
+  }
+
+  btnAddSize.addEventListener('click', function() { addSizeRow(); });
+
+  window.showModal = function () {
+    resetForm();
+    modalTitle.textContent = 'Add Shoes';
+    modalForm.dataset.mode = 'create';
+    openModal();
+  };
+
+  window.openEditModal = async function (id) {
+    resetForm();
+    modalTitle.textContent = 'Edit Shoes';
+    modalForm.dataset.mode = 'edit';
+    document.getElementById('f_id').value = id;
+
+    try {
+      const url = URL_GET.replace('00000000-0000-0000-0000-000000000000', id);
+      const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error('Load failed');
+
+      document.getElementById('f_name').value = data.name || '';
+      document.getElementById('f_price').value = data.price || 0;
+      document.getElementById('f_thumbnail').value = data.thumbnail || '';
+      document.getElementById('f_description').value = data.description || '';
+
+      sizeList.innerHTML = '';
+      if (Array.isArray(data.sizes) && data.sizes.length) {
+        data.sizes.forEach(function (row) { addSizeRow(row.size, row.stock); });
+      } else {
+        addSizeRow();
+      }
+
+      openModal();
+    } catch (e) {
+      console.error(e);
+      if (window.showToast) showToast('Failed to load product');
+    }
+  };
+
+  modalForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    modalErrors.classList.add('hidden');
+    modalErrors.innerHTML = '';
+    modalSubmit.disabled = true;
+
+    const mode = modalForm.dataset.mode || 'create';
+    const formData = new FormData(modalForm);
+
+    // drop empty size rows
+    const sizes = Array.from(sizeList.querySelectorAll('input[name="size[]"]'));
+    const stocks = Array.from(sizeList.querySelectorAll('input[name="stock[]"]'));
+    const kept = [];
+    for (let i = 0; i < sizes.length; i++) {
+      const s = (sizes[i].value || '').trim();
+      const q = (stocks[i].value || '').trim();
+      if (s !== '' || q !== '') kept.push([s, q]);
+    }
+    formData.delete('size[]');
+    formData.delete('stock[]');
+    kept.forEach(function (p) {
+      formData.append('size[]', p[0]);
+      formData.append('stock[]', p[1]);
+    });
+
+    try {
+      let url = URL_CREATE;
+      if (mode === 'edit') {
+        const id = document.getElementById('f_id').value;
+        url = URL_EDIT.replace('00000000-0000-0000-0000-000000000000', id);
+      }
+
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRF() },
+        body: formData,
+        credentials: 'same-origin'
+      });
+      const data = await resp.json().catch(() => ({}));
+
+      if (resp.ok && data.ok) {
+        if (window.showToast) showToast(mode === 'edit' ? 'Updated' : 'Created');
+        closeModal();
+        if (typeof loadList === 'function') loadList(); else window.location.reload();
+      } else {
+        const errs = data.errors || {};
+        modalErrors.innerHTML = Object.keys(errs).map(function (k) {
+          return '<div><b>' + k + ':</b> ' + errs[k].join(', ') + '</div>';
+        }).join('');
+        modalErrors.classList.remove('hidden');
+        if (window.showToast) showToast('Save failed');
+      }
+    } catch (err) {
+      console.error(err);
+      modalErrors.textContent = 'Network error. Please try again.';
+      modalErrors.classList.remove('hidden');
+      if (window.showToast) showToast('Network error');
+    } finally {
+      modalSubmit.disabled = false;
+    }
+  });
+</script>
